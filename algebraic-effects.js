@@ -185,19 +185,58 @@ const collectLogs = {
   }
 };
 
-function* main() {
-  return yield withHandler(collectLogs, withHandler(reverseLog, parent()));
+// function* main() {
+//   return yield withHandler(collectLogs, withHandler(reverseLog, parent()));
+// }
+
+// function* parent() {
+//   return yield child();
+// }
+
+// function* child() {
+//   yield log("A");
+//   yield log("B");
+//   yield log("C");
+//   return 10;
+// }
+
+// start(main(), console.log);
+
+abortZero = {
+  *abort () {
+    return 0
+  }
 }
 
-function* parent() {
-  return yield child();
+// function* main () {
+//   return yield withHandler(abortZero, times([1, 2, 0, 4]))
+// }
+// function* times (arr) {
+//   if (arr.length === 0) return 1
+//   if (arr[0] === 0) yield perform('abort')
+//   // if (arr[0] === 0) return 0
+//   if (arr[0] !== 0) return arr[0]*(yield times(arr.slice(1)))
+// }
+
+// start(main(), console.log)
+
+resumeComputation = {
+  *resume (_, resume) {
+    yield resume([])
+  } 
 }
 
-function* child() {
-  yield log("A");
-  yield log("B");
-  yield log("C");
-  return 10;
+function* main () {
+  return yield withHandler(resumeComputation, idLst([1, 2, 3, 4]))
 }
 
-start(main(), console.log);
+function* idLst (arr) {
+  if (arr.length === 0) {
+    // return []
+    yield perform('resume')
+  } else {
+    return [arr[0], ...(yield idLst(arr.slice(1)))]
+  }
+}
+
+start(main(), console.log)
